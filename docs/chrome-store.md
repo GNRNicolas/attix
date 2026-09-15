@@ -23,7 +23,7 @@ Nothing is closed, nothing is lost.
 It never touches a tab that is active, pinned, playing audio, or already asleep.
 
 What it does not do, and it is better said than faked: Chrome exposes per-tab
-memory to no Web Store extension at all. The `chrome.processes` API exists but is
+memory to no Web Store extension at all. The chrome.processes API exists but is
 reserved for internal builds. Showing "312 MB" next to a tab would mean inventing
 the number, so this extension sorts on the one thing it actually knows: how long
 ago you last looked at the tab.
