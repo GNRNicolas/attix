@@ -116,6 +116,31 @@ pinned, not already discarded, and idle for 20 minutes or more. It does not disp
 per-tab memory: Chrome exposes that to no Web Store extension (`chrome.processes` is
 restricted to internal builds), so the number would have to be invented.
 
+## Tests
+
+```sh
+./test.sh
+```
+
+Exits 0 when every case passes, 1 otherwise.
+
+There is no Xcode and no SwiftPM on this machine, so XCTest is out of reach. `test.sh`
+compiles a standalone executable with `swiftc` instead, from `Mesures.swift` plus
+`Tests/`, and that executable prints one line per case and its own summary. The tests
+live in `Tests/` and not at the root on purpose: `build.sh` compiles `*.swift` from the
+root, so a test file left there would ship inside the app. `main.swift` is excluded from
+the test binary because it carries the `NSApplication` bootstrap at top level, and a
+binary has only one entry point.
+
+What is covered: the splitting of `ps` output (`Sonde.analyse`, extracted from
+`lignesPs()` for that purpose), bundle-name extraction (`Sonde.nomApp`), reverse-DNS
+names (`Sonde.joli`), Jetsam `.ips` parsing (`Jetsam.victime`, against report files
+written to a temporary folder), byte formatting (`go`), and `ALIAS` grouping.
+
+The `ps` cases matter most: an earlier version lost 566 lines out of 575 and showed
+Chrome at 205 MB instead of 1273. They pin down leading spaces, wide and narrow RSS
+values together, paths containing spaces, blank lines and malformed lines.
+
 ## Conventions
 
 Interface in English, code comments in French.

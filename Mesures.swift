@@ -143,6 +143,12 @@ enum Sonde {
     // et c'est exactement ce que memwatch mesure déjà : deux outils, un même chiffre.
     static func lignesPs() -> [(rss: UInt64, pid: Int32, chemin: String)] {
         guard let sortie = shell("/bin/ps", ["-Ao", "rss=,pid=,comm="]) else { return [] }
+        return analyse(sortie)
+    }
+
+    /// Le découpage pur de la sortie de `ps`, séparé de l'appel au binaire pour être
+    /// testable sans processus (voir Tests/). Aucun changement de comportement.
+    static func analyse(_ sortie: String) -> [(rss: UInt64, pid: Int32, chemin: String)] {
         return sortie.split(separator: "\n").compactMap { ligne in
             // On découpe À LA MAIN, et ce n'est pas de la coquetterie.
             //
