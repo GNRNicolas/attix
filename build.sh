@@ -70,13 +70,10 @@ mkdir -p "$CACHE"
 # et c'est lui que les métadonnées désignent. L'app peut être renommée sans rien casser.
 #
 # Swift n'accepte du code au premier niveau que dans un fichier nommé main.swift, et il en
-# faut exactement un dès qu'on compile plusieurs fichiers : d'où la copie dans un dossier
-# de travail plutôt qu'un renommage de la source.
-TRAVAIL=$(mktemp -d)
-cp "$ICI/fixdock-lab.swift" "$TRAVAIL/main.swift"
+# faut exactement un dès qu'on compile plusieurs fichiers : c'est pourquoi le fichier qui
+# porte l'amorçage de NSApplication s'appelle main.swift dans le dépôt.
 swiftc -O -module-name Fixdock -module-cache-path "$CACHE" \
-  -o "$APP/Contents/MacOS/fixdock" "$TRAVAIL/main.swift"
-rm -rf "$TRAVAIL"
+  -o "$APP/Contents/MacOS/fixdock" "$ICI"/*.swift
 
 rm -rf "${JEU:h}"
 
