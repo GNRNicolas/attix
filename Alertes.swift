@@ -97,6 +97,10 @@ final class Alarme {
     private var panneau: NSPanel?
     private var minuteur: Timer?
 
+    /// Une alerte déjà affichée ne se remplace pas par une autre : la remplacer la ferait
+    /// clignoter et remettrait son compte à rebours à zéro à chaque relevé.
+    var visible: Bool { panneau != nil }
+
     func montre(_ titre: String, _ detail: String, critique: Bool,
                 action: @escaping () -> Void) {
         efface()
