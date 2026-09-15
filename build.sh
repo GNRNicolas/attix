@@ -1,19 +1,8 @@
 #!/bin/zsh
-# Construit « Fixdock.app » : LA seule app. Elle remplace celle que produisait
-# BRAIN/03-OUTILLAGE/mac/fixdock-app.sh, dont elle reprend le nom et l'identifiant.
+# Construit « Fixdock.app » dans /Applications.
 #
-# Il y a eu deux apps pendant la mise au point : une « Fixdock Lab » à côté de l'originale,
-# pour ne rien casser tant qu'on essayait. Ce n'est plus justifié une fois que la nouvelle
-# fait tout ce que faisait l'ancienne : deux entrées Spotlight pour un même outil sont un
-# défaut, pas une précaution. Ce script supprime donc l'ancienne installation.
-#
-# CE QUI N'EST PAS TOUCHÉ : ~/bin/fixdock.sh (la logique de relance du Dock, appelée par
-# l'app comme par l'action Spotlight), l'entrée du menu Services, et memwatch.
-#
-# EFFET DE BORD SOUHAITABLE : fixdock.sh appelait /Applications/Fixdock.app/Contents/
-# MacOS/fixdock-app pour ses notifications : un chemin qui échouait en silence (voir
-# actions.sh). Ce binaire disparaît, donc fixdock.sh bascule sur son repli osascript,
-# qui lui fonctionne. Ses notifications se remettent à s'afficher.
+# CE QUI N'EST PAS TOUCHÉ : ~/bin/fixdock.sh, la logique de relance du Dock, appelée
+# aussi bien par l'app que par le raccourci Spotlight.
 #
 # LSUIElement est ABSENT ici, contrairement à Fixdock.app : cette app a une fenêtre, elle
 # doit donc pouvoir prendre le focus et apparaître dans le Dock. Une app LSUIElement peut
@@ -85,15 +74,10 @@ mkdir -p "$CACHE"
 # de travail plutôt qu'un renommage de la source.
 TRAVAIL=$(mktemp -d)
 cp "$ICI/fixdock-lab.swift" "$TRAVAIL/main.swift"
-cp "$ICI/appintents.swift" "$TRAVAIL/"
 swiftc -O -module-name Fixdock -module-cache-path "$CACHE" \
-  -o "$APP/Contents/MacOS/fixdock" "$TRAVAIL/main.swift" "$TRAVAIL/appintents.swift"
+  -o "$APP/Contents/MacOS/fixdock" "$TRAVAIL/main.swift"
 rm -rf "$TRAVAIL"
 
-# Les métadonnées App Intents, que produirait appintentsmetadataprocessor si Xcode était
-# installé. Voir metadata.py pour le détail du format et du relevé des noms mangés.
-python3 "$ICI/metadata.py" "$APP/Contents/MacOS/fixdock" Fixdock \
-  "$APP/Contents/Resources/Metadata.appintents" || true
 rm -rf "${JEU:h}"
 
 # Le raccourci Spotlight voyage DANS le bundle : l'app peut ainsi proposer son
@@ -105,7 +89,5 @@ codesign --force --sign - "$APP" >/dev/null 2>&1
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \
   -f "$APP" 2>/dev/null || true
 touch "$APP"
-# L'installation d'essai n'a plus de raison d'être.
-rm -rf "$HOME/Applications/Fixdock Lab.app"
 
 print -r -- "✓ $APP"
