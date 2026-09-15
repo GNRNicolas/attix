@@ -81,6 +81,10 @@ rm -rf "${JEU:h}"
 # installation en un clic, sans dépendre d'un fichier laissé quelque part sur le disque.
 [[ -f "$ICI/Attix.shortcut" ]] && cp "$ICI/Attix.shortcut" "$APP/Contents/Resources/"
 
+# L'extension Chrome voyage elle aussi DANS le bundle, pour la même raison : l'app peut
+# ainsi la révéler dans le Finder sans dépendre du dépôt, qui peut avoir été déplacé.
+[[ -d "$ICI/chrome-extension" ]] && cp -R "$ICI/chrome-extension" "$APP/Contents/Resources/"
+
 codesign --force --sign - "$APP" >/dev/null 2>&1
 
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \

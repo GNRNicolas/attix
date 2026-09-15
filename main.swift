@@ -125,11 +125,14 @@ final class Controleur: NSObject, NSWindowDelegate {
     private let carteOrphelins = Carte("Stale dev servers")
     private let carteDock = Carte("Interface")
     private let carteRaccourci = Carte("Spotlight")
+    private let carteChrome = Carte("Chrome")
     private let carteDemarrage = Carte("Background")
     private let bDemarrage = Bouton("Enable")
     private let bRaccourci = Bouton("Install")
+    private let bChrome = Bouton("Get")
     private var texteDemarrage: NSView?
     private var texteRaccourci: NSView?
+    private var texteChrome: NSView?
     private var tictac: Timer?
     private var tour = 0
     private let bulle = Bulle()
@@ -197,7 +200,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         // Taille figée : sans bordure, un NSButton se recalcule plus petit, et le bouton
         // rétrécissait en passant à « Done ». Un état qui change la géométrie fait bouger
         // la carte entière.
-        for b in [bDemarrage, bRaccourci] {
+        for b in [bDemarrage, bRaccourci, bChrome] {
             b.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 b.widthAnchor.constraint(equalToConstant: 68),
@@ -212,6 +215,14 @@ final class Controleur: NSObject, NSWindowDelegate {
                      "Starts with your Mac and warns you before the system kills an app.")
         texteDemarrage = td
         carteDemarrage.ajouteLigne([td, NSView(), bDemarrage])
+
+        let tc = duo("Put idle tabs to sleep",
+                     "Chrome is usually the biggest consumer. Frees its memory without closing a tab.")
+        texteChrome = tc
+        carteChrome.ajouteLigne([tc, NSView(), bChrome])
+        bChrome.geste = { [weak self] in
+            ExtensionChrome.installe(depuis: self?.fenetre)
+        }
 
         let tr = duo("Run these actions from Spotlight",
                      "One Attix entry, every action inside. Needs Allow Running Scripts.")
@@ -272,11 +283,11 @@ final class Controleur: NSObject, NSWindowDelegate {
         // Le bas de la fenêtre : Spotlight au-dessus d'Interface, les deux fixes.
         // Une NSStackView détache ses vues cachées, c'est ce qu'on veut ici : une fois le
         // raccourci installé, la carte Spotlight disparaît sans laisser de trou.
-        let bas = NSStackView(views: [carteDemarrage, carteRaccourci, carteDock])
+        let bas = NSStackView(views: [carteDemarrage, carteChrome, carteRaccourci, carteDock])
         bas.orientation = .vertical
         bas.alignment = .leading
         bas.spacing = 12
-        for c in [carteDemarrage, carteRaccourci, carteDock] {
+        for c in [carteDemarrage, carteChrome, carteRaccourci, carteDock] {
             c.widthAnchor.constraint(equalTo: bas.widthAnchor).isActive = true
         }
 
@@ -446,6 +457,10 @@ final class Controleur: NSObject, NSWindowDelegate {
         let demarre = Demarrage.actif, raccourci = RaccourciSpotlight.installe
         bDemarrage.marqueFait(demarre, titre: "Enable",
                               rappel: "Attix already starts with your Mac. Manage it in System Settings > General > Login Items.")
+        let chrome = ExtensionChrome.installe
+        bChrome.marqueFait(chrome, titre: "Get",
+                           rappel: "The Attix extension is loaded in Chrome.")
+        texteChrome?.alphaValue = chrome ? 0.45 : 1
         bRaccourci.marqueFait(raccourci, titre: "Install",
                               rappel: "The Attix shortcut is installed. Click again to reinstall an updated version.")
         // Le texte s'estompe une fois la chose faite : la carte reste lisible si on la

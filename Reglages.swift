@@ -70,6 +70,76 @@ enum Reglages {
     }
 }
 
+/// L'extension Chrome, qui endort les onglets inactifs.
+///
+/// POURQUOI ELLE A SA PLACE DANS UNE APP DE MÉMOIRE. Chrome est le premier consommateur
+/// sur cette machine, de loin, et « Quit Chrome » est un geste brutal : on perd sa session
+/// le temps qu'elle revienne. L'extension fait la même chose en douceur, onglet par
+/// onglet, sans rien fermer. C'est le geste qu'on veut AVANT d'en arriver à quitter.
+enum ExtensionChrome {
+    /// L'identifiant du Chrome Web Store, une fois l'extension publiée. Tant qu'il est
+    /// vide, l'app propose le chargement en mode développeur, qui est la seule voie.
+    static let identifiant = ""
+
+    static var url: URL? {
+        identifiant.isEmpty ? nil
+            : URL(string: "https://chromewebstore.google.com/detail/\(identifiant)")
+    }
+
+    /// Le dossier embarqué dans le bundle. Il y est copié par build.sh pour que l'app
+    /// n'ait pas à retrouver le dépôt, qui peut avoir été déplacé ou supprimé.
+    static var dossier: URL? {
+        Bundle.main.url(forResource: "chrome-extension", withExtension: nil)
+    }
+
+    /// Chrome range chaque extension dans un dossier portant son identifiant, sous le
+    /// profil. On regarde TOUS les profils : une extension installée sur « Profile 1 »
+    /// compte autant que sur « Default ».
+    static var installe: Bool {
+        guard !identifiant.isEmpty else { return false }
+        let base = URL(fileURLWithPath: NSHomeDirectory())
+            .appendingPathComponent("Library/Application Support/Google/Chrome")
+        guard let profils = try? FileManager.default.contentsOfDirectory(
+            at: base, includingPropertiesForKeys: nil) else { return false }
+        return profils.contains {
+            FileManager.default.fileExists(
+                atPath: $0.appendingPathComponent("Extensions/\(identifiant)").path)
+        }
+    }
+
+    static func installe(depuis fenetre: NSWindow?) {
+        // Publiée : le Web Store fait le travail en un clic.
+        if let u = url { NSWorkspace.shared.open(u); return }
+
+        // Pas encore publiée : le chargement en mode développeur est la seule voie, et il
+        // ne s'automatise pas. Chrome refuse qu'une autre app ouvre chrome://extensions,
+        // précisément pour qu'aucune ne puisse pousser une extension sans qu'on le veuille.
+        guard let d = dossier else {
+            let a = NSAlert()
+            a.messageText = "Extension folder missing"
+            a.informativeText = "The chrome-extension folder is not in the app bundle. Rebuild the app with build.sh."
+            a.runModal()
+            return
+        }
+        let a = NSAlert()
+        a.messageText = "Load it in Chrome, once"
+        a.informativeText = """
+            The extension is not on the Chrome Web Store yet, so Chrome will not let \
+            any app install it for you.
+
+            1. Open chrome://extensions and turn on Developer mode, top right.
+            2. Click "Load unpacked", then pick the folder that is about to open \
+            in the Finder.
+
+            It stays installed until you remove it.
+            """
+        a.addButton(withTitle: "Show Me The Folder")
+        a.addButton(withTitle: "Cancel")
+        guard a.runModal() == .alertFirstButtonReturn else { return }
+        NSWorkspace.shared.activateFileViewerSelecting([d])
+    }
+}
+
 enum RaccourciSpotlight {
     static let nom = "Attix"
 
