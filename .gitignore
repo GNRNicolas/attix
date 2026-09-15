@@ -8,3 +8,6 @@ __pycache__/
 
 # Réglages locaux de l'agent
 .claude/
+
+# Artefact de build : refabriqué par ./pack-extension.sh
+docs/attix-chrome.zip
