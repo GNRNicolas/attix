@@ -398,12 +398,26 @@ final class Controleur: NSObject, NSWindowDelegate {
     /// Ce que memwatch rate et qu'on corrige ici : « ferme une app » ne dit pas laquelle.
     /// On nomme le plus gros consommateur qui ne porte pas de travail en cours : fermer
     /// Chrome coûte des onglets qui reviennent, fermer cmux coûte une session.
+    /// Jamais deux alertes à moins de cinq minutes, même si la pression empire.
+    private static let plancher: TimeInterval = 300
+    /// À niveau constant, on réannonce une demi-heure plus tard, pas avant.
+    private static let rappel: TimeInterval = 1800
+
     private func surveille(_ m: Memoire, _ liste: [Consommateur]) {
         guard m.pression >= 2 else { niveauAlerte = 1; return }
-        // On réannonce si ça EMPIRE, sinon au plus une fois par quart d'heure : une alerte
-        // qui se répète toutes les cinq secondes se ferme sans se lire.
+        guard !alarme.visible else { return }
+
+        // LE PLANCHER S'APPLIQUE AUSSI À L'AGGRAVATION, et c'est tout le correctif.
+        //
+        // La version d'avant alertait sans délai dès que le niveau montait. Or la ligne
+        // ci-dessus remet `niveauAlerte` à 1 à la moindre accalmie : sur une machine qui
+        // vit à 0,1 Go libre, la pression du noyau oscille entre normal et warning en
+        // permanence, chaque oscillation repassait pour une aggravation, et l'alerte
+        // revenait toutes les cinq secondes. Le délai de quinze minutes existait déjà,
+        // mais ce chemin le contournait entièrement.
+        let ecoule = Date().timeIntervalSince(derniereAlerte)
         let empire = m.pression > niveauAlerte
-        guard empire || Date().timeIntervalSince(derniereAlerte) > 900 else { return }
+        guard ecoule > Self.plancher, empire || ecoule > Self.rappel else { return }
         niveauAlerte = m.pression
         derniereAlerte = Date()
 
