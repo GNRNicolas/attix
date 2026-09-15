@@ -15,7 +15,7 @@ is idle. Attix is a small AppKit window that shows what is up there and puts
 the matching gesture on every line. No account, no permission, no network.
 
 <p align="center">
-  <img src="docs/capture.png" width="760" alt="The Attix window: the memory bar with its free, swap and compressed figures, the list of memory consumers with Show and Quit on each line, and the Restart Dock card at the bottom">
+  <img src="docs/capture.png" width="760" alt="The Attix window: the memory bar with its free, swap and compressed figures, the list of memory consumers with Show and Quit on each line, and the Background, Chrome, Spotlight and Interface cards at the bottom">
 </p>
 
 ## Install
