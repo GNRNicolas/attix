@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="titre">
+      <h1>Tabs</h1>
+      <span id="pastille" class="pastille">–</span>
+    </div>
+    <div id="barre" class="barre"><span id="remplissage"></span></div>
+    <p id="resume" class="detail">Counting…</p>
+  </header>
+
+  <section class="carte" id="carte-action" hidden>
+    <div class="ligne">
+      <div class="texte">
+        <strong id="action-titre"></strong>
+        <span id="action-detail" class="detail"></span>
+      </div>
+      <button id="liberer" class="primaire">Sleep them</button>
+    </div>
+  </section>
+
+  <section class="carte">
+    <h2>Idle the longest</h2>
+    <ul id="liste"></ul>
+    <p id="vide" class="detail" hidden>Every tab is either active, playing audio, pinned, or already asleep.</p>
+  </section>
+
+  <footer id="pied" class="detail"></footer>
+  <script src="popup.js"></script>
+</body>
+</html>

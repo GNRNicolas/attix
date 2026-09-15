@@ -1,0 +1,10 @@
+# Artefacts de construction
+*.unsigned.shortcut
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Réglages locaux de l'agent
+.claude/
