@@ -334,14 +334,19 @@ final class Carte: NSView {
 
         pile.orientation = .vertical
         pile.alignment = .leading
-        pile.spacing = 9
+        // 6 et non 9 : cet espacement sépare le titre de section de sa ligne, et les
+        // lignes entre elles. Quatre cartes en bas de fenêtre le paient quatre fois.
+        pile.spacing = 6
         pile.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pile)
         NSLayoutConstraint.activate([
             pile.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             pile.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-            pile.topAnchor.constraint(equalTo: topAnchor, constant: 13),
-            pile.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -13),
+            // 10 et non 13 : trois cartes empilées en bas de fenêtre, cela fait 18
+            // points repris à la liste des processus, qui est la seule zone dont la
+            // hauteur compte vraiment. Une carte à une ligne n'a pas besoin de plus.
+            pile.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            pile.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
         ])
         if let titre {
             pile.addArrangedSubview(
