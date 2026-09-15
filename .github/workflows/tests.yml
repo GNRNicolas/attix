@@ -1,0 +1,18 @@
+# Tourne sur macOS parce que Mesures.swift appelle host_statistics64 et sysctl : la suite
+# ne compile nulle part ailleurs. swiftc vient avec l'image, il n'y a rien à installer.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Suite de tests
+        run: ./test.sh
+      - name: L'app compile
+        run: ./build.sh "$RUNNER_TEMP"
