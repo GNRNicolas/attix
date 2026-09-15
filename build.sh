@@ -12,7 +12,10 @@ set -e
 ICI=${0:A:h}
 CIBLE=${1:-/Applications}
 APP="$CIBLE/Attix.app"
-ICONE=${ICONE:-$HOME/BRAIN/03-OUTILLAGE/mac/assets/fixdock-icon.png}
+# L'icône vient du DÉPÔT, pas de la machine de l'auteur. Le chemin d'avant pointait
+# dans ~/BRAIN : quiconque clone le projet tombait sur le carré uni de secours sans
+# comprendre pourquoi. Redéfinissable par la variable ICONE si besoin.
+ICONE=${ICONE:-$ICI/docs/icon.png}
 
 mkdir -p "$CIBLE"
 JEU=$(mktemp -d)/AppIcon.iconset
