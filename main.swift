@@ -2,7 +2,7 @@ import AppKit
 import Darwin
 import ServiceManagement
 
-// Fixdock Lab : la fenêtre actionnable de Fixdock.
+// Attix Lab : la fenêtre actionnable de Attix.
 //
 // Principe directeur, tiré de l'échec de memwatch v3 : une alerte qui nomme un problème
 // sans offrir le geste est un cul-de-sac. Ici, toute ligne affichée porte son action.
@@ -30,7 +30,7 @@ import ServiceManagement
 ///
 /// On garde deux chemins : `performKeyEquivalent` est appelé sur la fenêtre clé avant la
 /// recherche dans les menus, le moniteur sert de filet quand une feuille a le focus.
-final class FenetreFixdock: NSWindow {
+final class FenetreAttix: NSWindow {
     var surRelance: (() -> Void)?
 
     override func performKeyEquivalent(with e: NSEvent) -> Bool {
@@ -116,7 +116,7 @@ final class LigneConso: NSView {
 // ─────────────────────────────────────────────────────────────────────────────
 
 final class Controleur: NSObject, NSWindowDelegate {
-    private var fenetre: FenetreFixdock!
+    private var fenetre: FenetreAttix!
     private var colonne: NSStackView!
     private let pastille = Pastille()
     private let barre = Barre()
@@ -214,7 +214,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         carteDemarrage.ajouteLigne([td, NSView(), bDemarrage])
 
         let tr = duo("Run these actions from Spotlight",
-                     "One Fixdock entry, every action inside. Needs Allow Running Scripts.")
+                     "One Attix entry, every action inside. Needs Allow Running Scripts.")
         texteRaccourci = tr
         carteRaccourci.ajouteLigne([tr, NSView(), bRaccourci])
         bRaccourci.geste = { [weak self] in
@@ -260,11 +260,11 @@ final class Controleur: NSObject, NSWindowDelegate {
         ])
         defilement.documentView = doc
 
-        fenetre = FenetreFixdock(contentRect: NSRect(x: 0, y: 0, width: 460, height: 660),
+        fenetre = FenetreAttix(contentRect: NSRect(x: 0, y: 0, width: 460, height: 660),
                            styleMask: [.titled, .closable, .miniaturizable, .resizable],
                            backing: .buffered, defer: false)
-        fenetre.title = "Fixdock"
-        // Fermer la fenêtre ne détruit ni la fenêtre ni l'app : Fixdock continue de
+        fenetre.title = "Attix"
+        // Fermer la fenêtre ne détruit ni la fenêtre ni l'app : Attix continue de
         // surveiller la mémoire en arrière-plan, et c'est tout l'intérêt d'une alerte.
         fenetre.isReleasedWhenClosed = false
         fenetre.minSize = NSSize(width: 420, height: 480)
@@ -353,7 +353,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         installeMenu()
         Reglages.applique()
         // ⌘R relance le Dock sans viser le bouton. Un moniteur LOCAL suffit : le
-        // raccourci ne vaut que quand Fixdock est au premier plan, ce qui évite de
+        // raccourci ne vaut que quand Attix est au premier plan, ce qui évite de
         // confisquer une combinaison au reste du système.
         // Le jeton rendu par addLocalMonitorForEvents DOIT être conservé : le moniteur est
         // retiré dès que l'objet rendu est désalloué. Le jeter : ce que faisait la version
@@ -398,9 +398,9 @@ final class Controleur: NSObject, NSWindowDelegate {
 
         let critique = m.pression >= 4
         let cible = liste.first { !$0.sensible } ?? liste.first
-        var conseil = "Open Fixdock to see what is using your memory."
+        var conseil = "Open Attix to see what is using your memory."
         if let c = cible {
-            conseil = "\(c.nom) is using \(go(c.octets)). Click to quit it from Fixdock."
+            conseil = "\(c.nom) is using \(go(c.octets)). Click to quit it from Attix."
         }
         alarme.montre(critique ? "macOS is killing apps to free memory"
                                : "Memory is running out",
@@ -412,7 +412,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         surveille(Memoire.releve(), Sonde.consommateurs())
         if niveauAlerte < 2 {   // la machine va bien : on force l'affichage
             alarme.montre("macOS is killing apps to free memory",
-                          "Chrome is using 1.3 GB. Click to quit it from Fixdock.",
+                          "Chrome is using 1.3 GB. Click to quit it from Attix.",
                           critique: true) { [weak self] in self?.auPremierPlan() }
         }
     }
@@ -445,9 +445,9 @@ final class Controleur: NSObject, NSWindowDelegate {
     private func marqueLesCartes() {
         let demarre = Demarrage.actif, raccourci = RaccourciSpotlight.installe
         bDemarrage.marqueFait(demarre, titre: "Enable",
-                              rappel: "Fixdock already starts with your Mac. Manage it in System Settings > General > Login Items.")
+                              rappel: "Attix already starts with your Mac. Manage it in System Settings > General > Login Items.")
         bRaccourci.marqueFait(raccourci, titre: "Install",
-                              rappel: "The Fixdock shortcut is installed. Click again to reinstall an updated version.")
+                              rappel: "The Attix shortcut is installed. Click again to reinstall an updated version.")
         // Le texte s'estompe une fois la chose faite : la carte reste lisible si on la
         // cherche, mais elle cesse de réclamer l'attention de celui qui parcourt la fenêtre.
         texteDemarrage?.alphaValue = demarre ? 0.45 : 1
@@ -469,7 +469,7 @@ final class Controleur: NSObject, NSWindowDelegate {
             t += "ordre des sous-vues du fond :\n"
             for v in d.superview?.subviews ?? [] { t += "   \(type(of: v))  \(v.frame)\n" }
         }
-        try? t.write(toFile: NSHomeDirectory() + "/fixdock-diag.txt",
+        try? t.write(toFile: NSHomeDirectory() + "/attix-diag.txt",
                      atomically: true, encoding: .utf8)
 
         // Le rendu AppKit de la fenêtre, sans passer par une capture d'écran : pas de
@@ -478,7 +478,7 @@ final class Controleur: NSObject, NSWindowDelegate {
            let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) {
             v.cacheDisplay(in: v.bounds, to: rep)
             if let png = rep.representation(using: .png, properties: [:]) {
-                try? png.write(to: URL(fileURLWithPath: NSHomeDirectory() + "/fixdock-diag.png"))
+                try? png.write(to: URL(fileURLWithPath: NSHomeDirectory() + "/attix-diag.png"))
             }
         }
     }
@@ -508,8 +508,8 @@ final class Controleur: NSObject, NSWindowDelegate {
                                     geste: { [weak self] in self?.reglages.montre() },
                                     keyEquivalent: ","))
         sousApp.addItem(.separator())
-        sousApp.addItem(NSMenuItem(title: "Hide Fixdock", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h"))
-        sousApp.addItem(NSMenuItem(title: "Quit Fixdock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        sousApp.addItem(NSMenuItem(title: "Hide Attix", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h"))
+        sousApp.addItem(NSMenuItem(title: "Quit Attix", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         mApp.submenu = sousApp
         barre.addItem(mApp)
 

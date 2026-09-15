@@ -144,7 +144,7 @@ section("Jetsam.victime (.ips reports)")
 // T/ de l'usager, qui n'est pas toujours accessible en écriture (bac à sable d'agent).
 let racineTmp = ProcessInfo.processInfo.environment["TMPDIR"] ?? NSTemporaryDirectory()
 let bac = URL(fileURLWithPath: racineTmp)
-    .appendingPathComponent("fixdock-tests-\(getpid())", isDirectory: true)
+    .appendingPathComponent("attix-tests-\(getpid())", isDirectory: true)
 do { try FileManager.default.createDirectory(at: bac, withIntermediateDirectories: true) }
 catch { print("  FAIL cannot create temp dir: \(error)"); exit(1) }
 

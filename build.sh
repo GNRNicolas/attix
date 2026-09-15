@@ -1,17 +1,17 @@
 #!/bin/zsh
-# Construit « Fixdock.app » dans /Applications.
+# Construit « Attix.app » dans /Applications.
 #
 # CE QUI N'EST PAS TOUCHÉ : ~/bin/fixdock.sh, la logique de relance du Dock, appelée
 # aussi bien par l'app que par le raccourci Spotlight.
 #
-# LSUIElement est ABSENT ici, contrairement à Fixdock.app : cette app a une fenêtre, elle
+# LSUIElement est ABSENT ici, contrairement à Attix.app : cette app a une fenêtre, elle
 # doit donc pouvoir prendre le focus et apparaître dans le Dock. Une app LSUIElement peut
 # afficher une fenêtre mais jamais la mettre au premier plan proprement.
 
 set -e
 ICI=${0:A:h}
 CIBLE=${1:-/Applications}
-APP="$CIBLE/Fixdock.app"
+APP="$CIBLE/Attix.app"
 ICONE=${ICONE:-$HOME/BRAIN/03-OUTILLAGE/mac/assets/fixdock-icon.png}
 
 mkdir -p "$CIBLE"
@@ -49,37 +49,37 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key>            <string>Fixdock</string>
-	<key>CFBundleDisplayName</key>     <string>Fixdock</string>
-	<key>CFBundleIdentifier</key>      <string>fr.nicomatsuri.fixdock</string>
-	<key>CFBundleExecutable</key>      <string>fixdock</string>
+	<key>CFBundleName</key>            <string>Attix</string>
+	<key>CFBundleDisplayName</key>     <string>Attix</string>
+	<key>CFBundleIdentifier</key>      <string>fr.nicomatsuri.attix</string>
+	<key>CFBundleExecutable</key>      <string>attix</string>
 	<key>CFBundleIconFile</key>        <string>AppIcon</string>
 	<key>CFBundlePackageType</key>     <string>APPL</string>
 	<key>CFBundleShortVersionString</key> <string>0.1</string>
 	<key>CFBundleVersion</key>         <string>1</string>
 	<key>LSMinimumSystemVersion</key>  <string>14.0</string>
-	<key>NSHumanReadableCopyright</key><string>PROJECTS/Fixdock/build.sh</string>
+	<key>NSHumanReadableCopyright</key><string>PROJECTS/Attix/build.sh</string>
 </dict>
 </plist>
 PLIST
 
-CACHE="${TMPDIR:-/tmp}/fixdock-cache"
+CACHE="${TMPDIR:-/tmp}/attix-cache"
 mkdir -p "$CACHE"
 
-# Le nom de MODULE est figé à « Fixdock » : le nom Swift mangé des App Intents en dépend,
+# Le nom de MODULE est figé à « Attix » : le nom Swift mangé des App Intents en dépend,
 # et c'est lui que les métadonnées désignent. L'app peut être renommée sans rien casser.
 #
 # Swift n'accepte du code au premier niveau que dans un fichier nommé main.swift, et il en
 # faut exactement un dès qu'on compile plusieurs fichiers : c'est pourquoi le fichier qui
 # porte l'amorçage de NSApplication s'appelle main.swift dans le dépôt.
-swiftc -O -module-name Fixdock -module-cache-path "$CACHE" \
-  -o "$APP/Contents/MacOS/fixdock" "$ICI"/*.swift
+swiftc -O -module-name Attix -module-cache-path "$CACHE" \
+  -o "$APP/Contents/MacOS/attix" "$ICI"/*.swift
 
 rm -rf "${JEU:h}"
 
 # Le raccourci Spotlight voyage DANS le bundle : l'app peut ainsi proposer son
 # installation en un clic, sans dépendre d'un fichier laissé quelque part sur le disque.
-[[ -f "$ICI/Fixdock.shortcut" ]] && cp "$ICI/Fixdock.shortcut" "$APP/Contents/Resources/"
+[[ -f "$ICI/Attix.shortcut" ]] && cp "$ICI/Attix.shortcut" "$APP/Contents/Resources/"
 
 codesign --force --sign - "$APP" >/dev/null 2>&1
 

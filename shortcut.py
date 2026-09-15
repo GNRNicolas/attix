@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Fabrique « Fixdock.shortcut » : UN raccourci, un menu, toutes les actions.
+"""Fabrique « Attix.shortcut » : UN raccourci, un menu, toutes les actions.
 
 POURQUOI UN SEUL RACCOURCI
 Un raccourci par action encombrerait Spotlight d'autant d'entrées : le défaut qu'on
 cherchait justement à corriger en supprimant les bundles d'action. Ici, Spotlight ne voit
-qu'une entrée, « Fixdock » ; c'est en la lançant que le menu des gestes apparaît.
+qu'une entrée, « Attix » ; c'est en la lançant que le menu des gestes apparaît.
 
 POURQUOI CE DÉTOUR
 La voie directe, des App Intents dans l'app, est fermée : les métadonnées faites à la
@@ -53,7 +53,7 @@ GESTES = [
      'for pid in $(pgrep -x node; pgrep -x bun); do '
      'cwd=$(lsof -a -d cwd -p "$pid" -Fn 2>/dev/null | sed -n "s/^n//p" | head -1); '
      '[ -n "$cwd" ] && [ ! -d "$cwd" ] && kill -TERM "$pid"; done; true'),
-    ("Open Fixdock", 'open -a /Applications/Fixdock.app'),
+    ("Open Attix", 'open -a /Applications/Attix.app'),
 ]
 
 GROUPE = str(uuid.uuid4()).upper()
@@ -81,7 +81,7 @@ def construire():
     actions = [action("is.workflow.actions.choosefrommenu", {
         "GroupingIdentifier": GROUPE,
         "WFControlFlowMode": 0,
-        "WFMenuPrompt": "Fixdock",
+        "WFMenuPrompt": "Attix",
         "WFMenuItems": [titre for titre, _ in GESTES],
     })]
     for titre, commande in GESTES:
@@ -147,7 +147,7 @@ def construire():
 
 
 def main():
-    sortie = Path(sys.argv[1] if len(sys.argv) > 1 else "Fixdock.shortcut")
+    sortie = Path(sys.argv[1] if len(sys.argv) > 1 else "Attix.shortcut")
     brut = sortie.with_suffix(".unsigned.shortcut")
     brut.write_bytes(plistlib.dumps(construire(), fmt=plistlib.FMT_BINARY))
     for mode in ("anyone", "people-who-know-me"):
