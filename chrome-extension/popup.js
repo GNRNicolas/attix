@@ -1,4 +1,4 @@
-// Fixdock for Chrome : mettre en veille les onglets inactifs, sans les perdre.
+// Attix for Chrome : mettre en veille les onglets inactifs, sans les perdre.
 //
 // CE QU'ON NE PEUT PAS FAIRE, et il vaut mieux le dire que le simuler : Chrome n'expose
 // la mémoire par onglet à AUCUNE extension du Web Store. L'API `chrome.processes` existe
