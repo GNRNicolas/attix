@@ -83,9 +83,10 @@ at the moment you use it, with a message about "security settings" that names ne
 setting nor where it is. The app states this before installing rather than after.
 
 Note on signing the shortcut file: `shortcuts sign --mode anyone` goes through an Apple
-service that returned 500 from this machine (measured 14/09/2026). `shortcut.py` tries it
-first and falls back to `people-who-know-me`, which signs locally and is enough for your
-own use.
+service, and that service is not always up. It returned 500 on 14/09/2026 and worked the
+next day. `shortcut.py` tries `anyone` first and falls back to `people-who-know-me`, which
+signs locally and is enough for your own use but not for handing the file to someone else.
+Check which mode the build reports before distributing it.
 
 ## Guardrails
 
