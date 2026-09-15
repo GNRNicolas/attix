@@ -1,10 +1,10 @@
-# Fixdock
+# Attix
 
 On a MacBook Air M2 with 8 GB, running coding agents, Chrome and a second browser at the
 same time, the kernel starts killing processes to reclaim memory (Jetsam). The app that
 disappears did not "crash": it was terminated, and nothing on screen says so.
 
-Fixdock is a small AppKit window that shows where the RAM actually goes, and puts the
+Attix is a small AppKit window that shows where the RAM actually goes, and puts the
 matching gesture on every line it shows.
 
 ## What it does
@@ -24,25 +24,25 @@ matching gesture on every line it shows.
 - **Reads the latest Jetsam report** in `/Library/Logs/DiagnosticReports`, so you can tell
   that an app was killed. It separates `per-process-limit` (one process hit its own limit,
   the machine was fine) from the machine-wide reasons (`vm-pageshortage`, `highwater`).
-- **Installs a Spotlight shortcut** in one click. One entry named "Fixdock" in Spotlight,
+- **Installs a Spotlight shortcut** in one click. One entry named "Attix" in Spotlight,
   six gestures inside a menu: Restart Dock, Restart Finder, Restart Menu Bar, Quit Chrome,
-  Stop Stale Dev Servers, Open Fixdock.
+  Stop Stale Dev Servers, Open Attix.
 - **Optional launch at login** via `SMAppService` (visible in System Settings > General >
   Login Items), and an optional Dock-less mode.
 
 ## Install
 
 ```sh
-./build.sh              # builds /Applications/Fixdock.app
+./build.sh              # builds /Applications/Attix.app
 ./build.sh ~/Applications   # or anywhere else
 ```
 
 Requirements: Command Line Tools (`swiftc`), Python 3, macOS 14 or later
 (`LSMinimumSystemVersion` is 14.0). No Xcode, no dependencies, one Swift file.
 
-`build.sh` compiles `fixdock-lab.swift`, builds the icon, copies `Fixdock.shortcut` into
+`build.sh` compiles `attix-lab.swift`, builds the icon, copies `Attix.shortcut` into
 the bundle, signs ad hoc and re-registers with LaunchServices. To regenerate the shortcut
-file itself: `python3 shortcut.py Fixdock.shortcut`.
+file itself: `python3 shortcut.py Attix.shortcut`.
 
 ## Known limits
 
@@ -51,7 +51,7 @@ who receives the `.app` (AirDrop, zip, download) gets blocked by Gatekeeper. Two
 around it:
 
 ```sh
-xattr -d com.apple.quarantine /Applications/Fixdock.app
+xattr -d com.apple.quarantine /Applications/Attix.app
 ```
 
 or right-click the app > Open, then confirm in the dialog.

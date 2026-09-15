@@ -211,16 +211,16 @@ enum Sonde {
         }
         // DEUX noms pour un même processus, et il faut les deux.
         //
-        // `processName` rend le nom de l'EXÉCUTABLE (« fixdock »), alors que la liste
-        // regroupe les processus sous le nom de leur BUNDLE (« Fixdock »). Ne filtrer que
+        // `processName` rend le nom de l'EXÉCUTABLE (« attix »), alors que la liste
+        // regroupe les processus sous le nom de leur BUNDLE (« Attix »). Ne filtrer que
         // le premier laissait l'app se ranger parmi les consommateurs à surveiller, avec
         // son propre bouton Quit.
         let moi = ProcessInfo.processInfo.processName
-        let monBundle = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Fixdock"
+        let monBundle = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Attix"
         let actives = NSWorkspace.shared.runningApplications
         return total.filter {
             $0.value >= minimum && $0.key != moi && $0.key != monBundle
-                && $0.key != "Fixdock Lab"
+                && $0.key != "Attix Lab"
                 && !INTOUCHABLES.contains($0.key)
         }
             .map { (nom, octets) in

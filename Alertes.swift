@@ -144,7 +144,7 @@ final class Alarme {
         cible.geste = { [weak self] in self?.efface(); action() }
 
         // La croix ferme SANS ouvrir l'app. Sans elle, l'alerte n'avait qu'une sortie :
-        // cliquer, donc ouvrir Fixdock. Écarter une alerte qu'on a lue et comprise est un
+        // cliquer, donc ouvrir Attix. Écarter une alerte qu'on a lue et comprise est un
         // geste à part entière, et il ne doit rien déclencher.
         // Un rond posé à cheval sur le coin supérieur gauche, révélé au survol : c'est la
         // forme et la place qu'a celle des notifications du système.

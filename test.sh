@@ -13,11 +13,11 @@
 
 set -e
 ICI=${0:A:h}
-CACHE="${TMPDIR:-/tmp}/fixdock-cache-tests"
-BIN="${TMPDIR:-/tmp}/fixdock-tests.bin"
+CACHE="${TMPDIR:-/tmp}/attix-cache-tests"
+BIN="${TMPDIR:-/tmp}/attix-tests.bin"
 mkdir -p "$CACHE"
 
-swiftc -module-name FixdockTests -module-cache-path "$CACHE" \
+swiftc -module-name AttixTests -module-cache-path "$CACHE" \
   -o "$BIN" "$ICI/Mesures.swift" "$ICI/Tests"/*.swift
 
 "$BIN"

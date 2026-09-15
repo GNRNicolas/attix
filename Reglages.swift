@@ -11,7 +11,7 @@ import ServiceManagement
 ///
 /// La carte disparaît d'elle-même une fois le raccourci présent : proposer d'installer ce
 /// qui est déjà installé est la meilleure façon de faire douter de tout le reste.
-/// Le lancement au démarrage : c'est ce qui fait de Fixdock un remplaçant de memwatch.
+/// Le lancement au démarrage : c'est ce qui fait de Attix un remplaçant de memwatch.
 ///
 /// Une alerte de mémoire n'a de valeur que si elle arrive SANS qu'on ait pensé à ouvrir
 /// l'app : personne ne lance un moniteur de mémoire avant de manquer de mémoire. memwatch
@@ -30,20 +30,20 @@ enum Demarrage {
         } catch {
             let a = NSAlert()
             a.messageText = "Could not enable launch at login"
-            a.informativeText = "\(error.localizedDescription)\n\nYou can add Fixdock yourself in System Settings > General > Login Items."
+            a.informativeText = "\(error.localizedDescription)\n\nYou can add Attix yourself in System Settings > General > Login Items."
             a.runModal()
         }
     }
 }
 
-/// Les deux réglages qui décident de ce que Fixdock est : un outil qu'on ouvre, ou une
+/// Les deux réglages qui décident de ce que Attix est : un outil qu'on ouvre, ou une
 /// veille qui tourne.
 ///
 /// Masquer l'icône du Dock passe l'app en .accessory : un moniteur qui tourne en
 /// permanence n'a rien à faire dans le Dock, où l'on range ce qu'on ouvre et ferme.
 ///
 /// Il n'y a délibérément PAS d'icône de barre des menus en échange. Le retour se fait par
-/// Spotlight : lancer Fixdock alors qu'il tourne déjà envoie un « reopen », et la fenêtre
+/// Spotlight : lancer Attix alors qu'il tourne déjà envoie un « reopen », et la fenêtre
 /// revient. C'est la même porte que pour tout le reste de l'app, plutôt qu'un vingtième
 /// logo dans une barre déjà pleine.
 enum Reglages {
@@ -71,10 +71,10 @@ enum Reglages {
 }
 
 enum RaccourciSpotlight {
-    static let nom = "Fixdock"
+    static let nom = "Attix"
 
     /// `shortcuts list` donne un nom par ligne. On compare la ligne entière : un raccourci
-    /// nommé « Fixdock Notes » ne doit pas faire croire que le nôtre est là.
+    /// nommé « Attix Notes » ne doit pas faire croire que le nôtre est là.
     static var installe: Bool {
         guard let sortie = shell("/usr/bin/shortcuts", ["list"]) else { return false }
         return sortie.split(separator: "\n")
@@ -99,7 +99,7 @@ enum RaccourciSpotlight {
         ⚠️ 2. In Shortcuts, open Settings (⌘,) → Advanced and turn on \
         "Allow Running Scripts".
 
-        Step 2 is not optional: every Fixdock gesture is a shell command \
+        Step 2 is not optional: every Attix gesture is a shell command \
         (restart the Dock, quit Chrome, stop stale dev servers), and Shortcuts \
         refuses to run those until that box is ticked.
         """
@@ -108,7 +108,7 @@ enum RaccourciSpotlight {
         guard let f = fichier else {
             let a = NSAlert()
             a.messageText = "Shortcut file missing"
-            a.informativeText = "Fixdock.shortcut is not in the app bundle. Rebuild the app with build.sh."
+            a.informativeText = "Attix.shortcut is not in the app bundle. Rebuild the app with build.sh."
             a.runModal()
             return
         }
@@ -130,14 +130,14 @@ final class FenetreReglages: NSWindowController {
     convenience init() {
         let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
                          styleMask: [.titled, .closable], backing: .buffered, defer: false)
-        f.title = "Fixdock Settings"
+        f.title = "Attix Settings"
         f.isReleasedWhenClosed = false
         self.init(window: f)
 
         dock.target = self; dock.action = #selector(change)
         login.target = self; login.action = #selector(change)
 
-        let note = label("With the Dock icon hidden, reopen this window by launching Fixdock from Spotlight.",
+        let note = label("With the Dock icon hidden, reopen this window by launching Attix from Spotlight.",
                          taille: 11, couleur: .secondaryLabelColor)
         note.lineBreakMode = .byWordWrapping
         note.maximumNumberOfLines = 2
