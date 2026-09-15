@@ -286,7 +286,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         let bas = NSStackView(views: [carteDemarrage, carteChrome, carteRaccourci, carteDock])
         bas.orientation = .vertical
         bas.alignment = .leading
-        bas.spacing = 12
+        bas.spacing = 8
         for c in [carteDemarrage, carteChrome, carteRaccourci, carteDock] {
             c.widthAnchor.constraint(equalTo: bas.widthAnchor).isActive = true
         }
@@ -305,7 +305,7 @@ final class Controleur: NSObject, NSWindowDelegate {
             defilement.leadingAnchor.constraint(equalTo: fond.leadingAnchor),
             defilement.trailingAnchor.constraint(equalTo: fond.trailingAnchor),
 
-            bas.topAnchor.constraint(equalTo: defilement.bottomAnchor, constant: 12),
+            bas.topAnchor.constraint(equalTo: defilement.bottomAnchor, constant: 10),
             bas.leadingAnchor.constraint(equalTo: fond.leadingAnchor, constant: 14),
             bas.trailingAnchor.constraint(equalTo: fond.trailingAnchor, constant: -14),
             bas.bottomAnchor.constraint(equalTo: fond.bottomAnchor, constant: -14),
