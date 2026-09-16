@@ -212,9 +212,10 @@ main.swift       the window, the gestures, the menu, the bootstrap
 Tests/           the standalone test binary
 ```
 
-`chrome-extension/` holds an MV3 extension, coming to the Web Store soon: it
-counts open tabs and puts the idle ones to sleep with `chrome.tabs.discard()`.
-The tab keeps its title and position and reloads on click, nothing is closed.
+`chrome-extension/` holds the source of [Attix for Chrome](https://chromewebstore.google.com/detail/lfdolekbcojjlhdjndmoohifmpgecopn),
+an MV3 extension on the Web Store. It counts open tabs and puts the idle ones
+to sleep with `chrome.tabs.discard()`. The tab keeps its title and position and
+reloads on click, nothing is closed.
 Candidates are tabs not active, not audible, not pinned, not already
 discarded, and idle for 20 minutes or more. It shows no per-tab memory:
 `chrome.processes` is restricted to internal builds.
