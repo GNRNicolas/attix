@@ -77,9 +77,9 @@ enum Reglages {
 /// le temps qu'elle revienne. L'extension fait la même chose en douceur, onglet par
 /// onglet, sans rien fermer. C'est le geste qu'on veut AVANT d'en arriver à quitter.
 enum ExtensionChrome {
-    /// L'identifiant du Chrome Web Store, une fois l'extension publiée. Tant qu'il est
-    /// vide, l'app propose le chargement en mode développeur, qui est la seule voie.
-    static let identifiant = ""
+    /// L'identifiant du Chrome Web Store. Tant qu'il est vide, l'app propose le
+    /// chargement en mode développeur, qui est alors la seule voie.
+    static let identifiant = "lfdolekbcojjlhdjndmoohifmpgecopn"
 
     static var url: URL? {
         identifiant.isEmpty ? nil
