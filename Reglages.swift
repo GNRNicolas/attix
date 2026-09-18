@@ -36,18 +36,34 @@ enum Demarrage {
     }
 }
 
-/// Les deux réglages qui décident de ce que Attix est : un outil qu'on ouvre, ou une
-/// veille qui tourne.
+/// Les réglages qui décident de ce que Attix est : un outil qu'on ouvre, ou une veille
+/// qui tourne.
 ///
 /// Masquer l'icône du Dock passe l'app en .accessory : un moniteur qui tourne en
 /// permanence n'a rien à faire dans le Dock, où l'on range ce qu'on ouvre et ferme.
 ///
-/// Il n'y a délibérément PAS d'icône de barre des menus en échange. Le retour se fait par
-/// Spotlight : lancer Attix alors qu'il tourne déjà envoie un « reopen », et la fenêtre
-/// revient. C'est la même porte que pour tout le reste de l'app, plutôt qu'un vingtième
-/// logo dans une barre déjà pleine.
+/// L'icône de barre des menus prend le relais. Le dépôt la refusait tant qu'on ne lui
+/// voyait qu'un rôle de porte de retour — Spotlight en tient lieu, et une barre pleine
+/// n'a pas besoin d'un logo de plus. Elle affiche la mémoire libre EN PERMANENCE, ce que
+/// ni le Dock ni Spotlight ne savent faire : c'est ça qu'elle apporte, pas le raccourci.
+/// Elle se coupe ici pour qui préfère sa barre vide.
 enum Reglages {
     private static let d = UserDefaults.standard
+
+    /// Visible par défaut : une app qu'on installe pour surveiller la mémoire doit
+    /// montrer la mémoire sans réglage préalable. `bool(forKey:)` rend `false` sur une
+    /// clé absente, d'où l'enregistrement du défaut plutôt qu'une lecture nue.
+    static let amorce: Void = {
+        UserDefaults.standard.register(defaults: ["barreMenus": true])
+    }()
+
+    static var barreMenus: Bool {
+        get { _ = amorce; return d.bool(forKey: "barreMenus") }
+        set { d.set(newValue, forKey: "barreMenus"); surBarreMenus?() }
+    }
+
+    /// Posé par le contrôleur : c'est lui qui détient l'item de barre des menus.
+    static var surBarreMenus: (() -> Void)?
 
     static var barreSeule: Bool {
         get { d.bool(forKey: "barreSeule") }
@@ -192,27 +208,28 @@ enum RaccourciSpotlight {
     }
 }
 
-/// Une fenêtre de réglages minuscule : deux cases, et ce qu'elles impliquent écrit dessous.
+/// Une fenêtre de réglages minuscule : trois cases, et ce qu'elles impliquent écrit dessous.
 final class FenetreReglages: NSWindowController {
     private let dock = NSButton(checkboxWithTitle: "Show in the Dock", target: nil, action: nil)
+    private let barre = NSButton(checkboxWithTitle: "Show in the menu bar", target: nil, action: nil)
     private let login = NSButton(checkboxWithTitle: "Open at login", target: nil, action: nil)
+    private let note = label("", taille: 11, couleur: .secondaryLabelColor)
 
     convenience init() {
-        let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
+        let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 178),
                          styleMask: [.titled, .closable], backing: .buffered, defer: false)
         f.title = "Attix Settings"
         f.isReleasedWhenClosed = false
         self.init(window: f)
 
         dock.target = self; dock.action = #selector(change)
+        barre.target = self; barre.action = #selector(change)
         login.target = self; login.action = #selector(change)
 
-        let note = label("With the Dock icon hidden, reopen this window by launching Attix from Spotlight.",
-                         taille: 11, couleur: .secondaryLabelColor)
         note.lineBreakMode = .byWordWrapping
         note.maximumNumberOfLines = 2
 
-        let pile = NSStackView(views: [dock, login, note])
+        let pile = NSStackView(views: [dock, barre, login, note])
         pile.orientation = .vertical
         pile.alignment = .leading
         pile.spacing = 10
@@ -224,9 +241,24 @@ final class FenetreReglages: NSWindowController {
         ])
     }
 
+    /// La note nomme la porte de retour QUI RESTE, et elle change avec les cases : dire
+    /// « relancez depuis Spotlight » à qui vient de garder l'icône de barre des menus
+    /// envoie faire le tour de la maison alors que la porte est là.
+    private func regleLaNote() {
+        if !Reglages.barreSeule {
+            note.stringValue = "The Dock icon reopens this window."
+        } else if Reglages.barreMenus {
+            note.stringValue = "With the Dock icon hidden, reopen this window from the menu bar icon."
+        } else {
+            note.stringValue = "With both icons hidden, reopen this window by launching Attix from Spotlight."
+        }
+    }
+
     func montre() {
         dock.state = Reglages.barreSeule ? .off : .on
+        barre.state = Reglages.barreMenus ? .on : .off
         login.state = Reglages.auLogin ? .on : .off
+        regleLaNote()
         window?.center()
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
@@ -235,7 +267,9 @@ final class FenetreReglages: NSWindowController {
 
     @objc private func change() {
         Reglages.barreSeule = (dock.state == .off)
+        Reglages.barreMenus = (barre.state == .on)
         Reglages.auLogin = (login.state == .on)
+        regleLaNote()
     }
 }
 
