@@ -86,10 +86,12 @@ closing quits, since nothing would be left to reopen it from.
 
 ### The menu bar icon
 
-Free memory, always on screen, without opening anything. The icon shows the
-figure in fixed-width digits so it never shifts the icons next to it, and turns
-into a coloured warning triangle only when the kernel itself reports pressure —
-the moment Jetsam starts deciding.
+One icon, nothing else: no figures beside it, no emoji, a fixed-width slot that
+never pushes its neighbours around. It is a template symbol, so it takes the
+colour of the menu bar itself — black on a light bar, white on a dark one. It
+turns into a coloured warning triangle only when the kernel reports pressure,
+the moment Jetsam starts deciding; in a menu bar, a colour means look at me.
+The figures are one click away, in the menu and in the tooltip.
 
 Its menu is not just a way back in: it carries the same gestures as the window.
 The state and the three figures on top, then the three largest consumers, each

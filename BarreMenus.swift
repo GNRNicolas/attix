@@ -10,10 +10,15 @@ import AppKit
 /// libres sont donc affichés en permanence, et l'icône n'est pas qu'un raccourci
 /// d'ouverture : elle porte les mêmes gestes que la fenêtre.
 ///
-/// LA LARGEUR NE BOUGE PAS. Les chiffres sont rendus en chiffres à chasse fixe
-/// (`monospacedDigitSystemFont`) : sans cela « 0.9 GB » et « 11.4 GB » n'ont pas la même
-/// largeur, l'item se redimensionne à chaque relevé et POUSSE tout ce qui est à sa gauche
-/// dans la barre, trois fois par minute. Une icône de veille ne doit jamais bouger.
+/// UNE ICÔNE, RIEN D'AUTRE. Pas de chiffres à côté, pas d'emoji : un item de largeur fixe
+/// (`squareLength`), qui ne pousse jamais ses voisins et ne réclame pas plus de place
+/// qu'un item système. Les chiffres sont dans le menu, à un clic.
+///
+/// La couleur suit la barre : le symbole est un TEMPLATE, donc rendu noir sur une barre
+/// claire et blanc sur une barre sombre, y compris sous un fond d'écran qui fait basculer
+/// la barre sans changer le thème du système. La seule teinte propre est celle de
+/// l'alerte, et elle n'apparaît qu'à partir de la pression du noyau : dans une barre des
+/// menus, une couleur veut dire « regarde-moi ».
 final class BarreMenus: NSObject, NSMenuDelegate {
     /// Les gestes sont ceux de la fenêtre : la barre ne réimplémente rien, elle appelle.
     var surOuvre: (() -> Void)?
@@ -48,12 +53,9 @@ final class BarreMenus: NSObject, NSMenuDelegate {
 
     private func montre() {
         guard item == nil else { return }
-        let i = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        i.button?.image = NSImage(systemSymbolName: "memorychip",
-                                  accessibilityDescription: "Attix memory")
-        i.button?.image?.isTemplate = true
-        i.button?.imagePosition = .imageLeading
-        i.button?.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+        let i = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        i.button?.imagePosition = .imageOnly
+        i.button?.image = Self.symbole(pression: 1)
         i.menu = menu
         item = i
     }
@@ -72,23 +74,25 @@ final class BarreMenus: NSObject, NSMenuDelegate {
         total = m.total
         guard let bouton = item?.button else { return }
 
-        bouton.title = " " + go(m.libre)
-        // L'icône reste un template (donc noire ou blanche selon le thème) tant que tout
-        // va bien : une barre des menus n'est pas un tableau de bord, une couleur y veut
-        // dire « regarde-moi ». Elle n'apparaît qu'à partir de la pression du noyau,
-        // c'est-à-dire au moment où Jetsam commence à décider.
         let e = m.etat
-        if m.pression >= 2 {
-            bouton.contentTintColor = e.couleur
-            bouton.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill",
-                                   accessibilityDescription: e.texte)
-            bouton.image?.isTemplate = false
-        } else {
-            bouton.contentTintColor = nil
-            bouton.image = NSImage(systemSymbolName: "memorychip", accessibilityDescription: e.texte)
-            bouton.image?.isTemplate = true
-        }
+        bouton.image = Self.symbole(pression: m.pression)
+        // La teinte ne sert QUE sous pression. `nil` rend la main au template, qui reprend
+        // alors la couleur de la barre : remettre .labelColor à la place figerait une
+        // couleur du thème système, qui n'est pas toujours celle de la barre.
+        bouton.contentTintColor = m.pression >= 2 ? e.couleur : nil
+        // Le chiffre se lit dans l'infobulle et dans le menu : l'icône, elle, reste muette.
         bouton.toolTip = "Attix · \(e.texte) · \(go(m.libre)) free"
+    }
+
+    /// Le symbole dit l'état à lui seul, puisqu'il n'y a plus de texte à côté : la puce
+    /// tant que le noyau est serein, le triangle dès qu'il signale la pression. Template
+    /// dans les deux cas — sous pression c'est `contentTintColor` qui colore, et non une
+    /// image en couleurs propres, qui resterait rouge sur une barre où elle se lit mal.
+    private static func symbole(pression: Int) -> NSImage? {
+        let nom = pression >= 2 ? "exclamationmark.triangle.fill" : "memorychip"
+        let img = NSImage(systemSymbolName: nom, accessibilityDescription: "Attix memory")
+        img?.isTemplate = true
+        return img
     }
 
     // ── Menu ─────────────────────────────────────────────────────────────────
