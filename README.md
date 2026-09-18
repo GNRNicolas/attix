@@ -29,7 +29,7 @@ git clone <the Attix repo> && cd Attix && ./build.sh
 Builds `/Applications/Attix.app`; pass a path to build it elsewhere
 (`./build.sh ~/Applications`). Needs macOS 14 or later and the Command Line
 Tools (`xcode-select --install`). No Xcode, no SwiftPM, no dependencies. The
-script compiles the five Swift files at the root, builds the icon, copies
+script compiles the Swift files at the root, builds the icon, copies
 `Attix.shortcut` into the bundle, signs ad hoc and re-registers with
 LaunchServices. To regenerate the shortcut file: `python3 shortcut.py
 Attix.shortcut`.
@@ -67,8 +67,9 @@ If a step fails, show me the exact error instead of working around it.
 
 Three zones, and only the middle one scrolls: the memory bar stays at the top
 and the cards at the bottom, so the gesture you opened the app for is never
-below the fold. Closing the window does not quit Attix, which is the point of
-the alert.
+below the fold. With the menu bar icon on, closing the window does not quit
+Attix — it keeps watching, which is the point of the alert; with the icon off,
+closing quits, since nothing would be left to reopen it from.
 
 - The bar carries the kernel's own state (Healthy, Under pressure, Critical)
   over three figures: free, swap, compressed, each explained under the `?`.
@@ -82,6 +83,22 @@ the alert.
   whose working directory no longer exists on disk: a deleted worktree whose
   server survived it. Each gets its resident size and a `Stop` button. Figures
   refresh every 5 seconds, this scan every 30 since it calls `lsof`.
+
+### The menu bar icon
+
+Free memory, always on screen, without opening anything. The icon shows the
+figure in fixed-width digits so it never shifts the icons next to it, and turns
+into a coloured warning triangle only when the kernel itself reports pressure —
+the moment Jetsam starts deciding.
+
+Its menu is not just a way back in: it carries the same gestures as the window.
+The state and the three figures on top, then the three largest consumers, each
+with its own `Show` and `Quit` — `Quit` goes through the very same confirmation
+as in the window, never a silent one. Below: Open Attix, Restart Dock,
+Settings…, Quit Attix.
+
+Turn it off in Settings (⌘,). With the icon on, closing the window leaves Attix
+watching; with both it and the Dock icon hidden, the way back is Spotlight.
 
 ### From Spotlight
 

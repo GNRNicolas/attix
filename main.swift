@@ -137,6 +137,7 @@ final class Controleur: NSObject, NSWindowDelegate {
     private var tour = 0
     private let bulle = Bulle()
     private let alarme = Alarme()
+    private let barreMenus = BarreMenus()
     private let reglages = FenetreReglages()
     private var niveauAlerte = 1               // le dernier niveau annoncé
     private var dernierJetsam: String?         // le rapport le plus récent déjà vu
@@ -362,6 +363,7 @@ final class Controleur: NSObject, NSWindowDelegate {
         }
 
         installeMenu()
+        installeBarreMenus()
         Reglages.applique()
         // ⌘R relance le Dock sans viser le bouton. Un moniteur LOCAL suffit : le
         // raccourci ne vaut que quand Attix est au premier plan, ce qui évite de
@@ -555,6 +557,22 @@ final class Controleur: NSObject, NSWindowDelegate {
 
     @objc private func menuRelanceDock() { relanceDock() }
 
+    /// L'icône de barre des menus n'a aucune logique à elle : elle rend les mêmes gestes
+    /// que la fenêtre, confirmations comprises. Une deuxième implémentation de « Quit »,
+    /// sans l'alerte qui nomme le risque, serait exactement le raccourci dangereux que le
+    /// reste de l'app refuse.
+    private func installeBarreMenus() {
+        barreMenus.surOuvre = { [weak self] in self?.auPremierPlan() }
+        barreMenus.surReglages = { [weak self] in self?.reglages.montre() }
+        barreMenus.surRelanceDock = { [weak self] in self?.relanceDock() }
+        barreMenus.surMontre = { [weak self] c in self?.montre(c) }
+        barreMenus.surQuitte = { [weak self] c in self?.quitte(c) }
+        // La case des réglages n'écrit qu'une préférence ; c'est ce rappel qui pose ou
+        // retire l'item, puisque le contrôleur est le seul à le détenir.
+        Reglages.surBarreMenus = { [weak self] in self?.barreMenus.applique() }
+        barreMenus.applique()
+    }
+
     /// Chaque estompe n'apparaît que s'il y a réellement du contenu caché de son côté,
     /// et monte progressivement sur les 20 premiers points : sinon elle surgirait d'un coup.
     @objc private func aDefile() {
@@ -565,7 +583,15 @@ final class Controleur: NSObject, NSWindowDelegate {
         estompeBas.alphaValue = min(1, max(0, restant / 20))
     }
 
+    /// Fermer la fenêtre quitte l'app — SAUF s'il reste une porte pour revenir.
+    ///
+    /// L'icône de barre des menus en est une, et elle change la donne : tant qu'elle est
+    /// là, Attix continue de relever, l'icône continue d'afficher la mémoire libre, et la
+    /// fenêtre revient d'un clic. Sans elle, une app qui survit à la fermeture de sa seule
+    /// fenêtre est une app qu'on croit fermée et qui tourne encore : c'est pourquoi le
+    /// `terminate` reste le cas par défaut.
     func windowWillClose(_ n: Notification) {
+        guard !barreMenus.visible else { return }
         tictac?.invalidate()
         NSApp.terminate(nil)
     }
@@ -605,6 +631,11 @@ final class Controleur: NSObject, NSWindowDelegate {
             if i < liste.count { l.isHidden = false; l.regle(liste[i], partDe: m.total) }
             else { l.isHidden = true }
         }
+
+        // Le même relevé alimente la barre des menus : la sonde des consommateurs coûte
+        // un parcours de tous les processus, la faire deux fois par tour serait payer
+        // deux fois pour le même chiffre.
+        barreMenus.regle(m, liste)
 
         surveille(m, liste)
         if complet { surveilleJetsam() }
