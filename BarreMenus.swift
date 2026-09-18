@@ -14,11 +14,17 @@ import AppKit
 /// (`squareLength`), qui ne pousse jamais ses voisins et ne réclame pas plus de place
 /// qu'un item système. Les chiffres sont dans le menu, à un clic.
 ///
-/// La couleur suit la barre : le symbole est un TEMPLATE, donc rendu noir sur une barre
-/// claire et blanc sur une barre sombre, y compris sous un fond d'écran qui fait basculer
-/// la barre sans changer le thème du système. La seule teinte propre est celle de
-/// l'alerte, et elle n'apparaît qu'à partir de la pression du noyau : dans une barre des
-/// menus, une couleur veut dire « regarde-moi ».
+/// UN SEUL SYMBOLE, JAMAIS DE COULEUR À NOUS. L'image est un TEMPLATE et le reste en
+/// toute circonstance : macOS la rend alors exactement comme les autres icônes de la
+/// barre, noire sur une barre claire, blanche sur une barre sombre, y compris quand c'est
+/// le fond d'écran et non le thème qui la fait basculer.
+///
+/// Une version antérieure passait à un triangle d'alerte teinté sous pression mémoire.
+/// C'était le seul endroit de l'app qui posait une couleur propre, et le résultat se
+/// voyait : une icône orange au milieu d'une rangée d'icônes monochromes ne ressemble pas
+/// à un avertissement, elle ressemble à une icône mal faite. L'alerte a déjà son canal,
+/// le panneau de `Alarme`, qui nomme le coupable et porte le geste ; la barre ne sert qu'à
+/// ouvrir, et l'état s'y lit dans l'infobulle et dans le menu.
 final class BarreMenus: NSObject, NSMenuDelegate {
     /// Les gestes sont ceux de la fenêtre : la barre ne réimplémente rien, elle appelle.
     var surOuvre: (() -> Void)?
@@ -55,7 +61,7 @@ final class BarreMenus: NSObject, NSMenuDelegate {
         guard item == nil else { return }
         let i = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         i.button?.imagePosition = .imageOnly
-        i.button?.image = Self.symbole(pression: 1)
+        i.button?.image = Self.symbole()
         i.menu = menu
         item = i
     }
@@ -74,23 +80,18 @@ final class BarreMenus: NSObject, NSMenuDelegate {
         total = m.total
         guard let bouton = item?.button else { return }
 
+        // L'icône ne bouge plus : ni son dessin, ni sa couleur. Seule l'infobulle suit le
+        // relevé, et le menu se remplit à son ouverture.
         let e = m.etat
-        bouton.image = Self.symbole(pression: m.pression)
-        // La teinte ne sert QUE sous pression. `nil` rend la main au template, qui reprend
-        // alors la couleur de la barre : remettre .labelColor à la place figerait une
-        // couleur du thème système, qui n'est pas toujours celle de la barre.
-        bouton.contentTintColor = m.pression >= 2 ? e.couleur : nil
-        // Le chiffre se lit dans l'infobulle et dans le menu : l'icône, elle, reste muette.
         bouton.toolTip = "Attix · \(e.texte) · \(go(m.libre)) free"
     }
 
-    /// Le symbole dit l'état à lui seul, puisqu'il n'y a plus de texte à côté : la puce
-    /// tant que le noyau est serein, le triangle dès qu'il signale la pression. Template
-    /// dans les deux cas — sous pression c'est `contentTintColor` qui colore, et non une
-    /// image en couleurs propres, qui resterait rouge sur une barre où elle se lit mal.
-    private static func symbole(pression: Int) -> NSImage? {
-        let nom = pression >= 2 ? "exclamationmark.triangle.fill" : "memorychip"
-        let img = NSImage(systemSymbolName: nom, accessibilityDescription: "Attix memory")
+    /// `contentTintColor` n'est jamais posé : un template dont on ne teinte rien est rendu
+    /// par macOS avec la couleur de la barre, et c'est précisément ce qu'on veut. Poser
+    /// `.labelColor` « pour bien faire » figerait la couleur du thème SYSTÈME, qui n'est
+    /// pas toujours celle de la barre — l'icône jurerait alors avec ses voisines.
+    private static func symbole() -> NSImage? {
+        let img = NSImage(systemSymbolName: "memorychip", accessibilityDescription: "Attix memory")
         img?.isTemplate = true
         return img
     }
