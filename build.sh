@@ -54,7 +54,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <dict>
 	<key>CFBundleName</key>            <string>Attix</string>
 	<key>CFBundleDisplayName</key>     <string>Attix</string>
-	<key>CFBundleIdentifier</key>      <string>fr.nicomatsuri.attix</string>
+	<key>CFBundleIdentifier</key>      <string>fr.gnrnicolas.attix</string>
 	<key>CFBundleExecutable</key>      <string>attix</string>
 	<key>CFBundleIconFile</key>        <string>AppIcon</string>
 	<key>CFBundlePackageType</key>     <string>APPL</string>
