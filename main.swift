@@ -400,26 +400,17 @@ final class Controleur: NSObject, NSWindowDelegate {
     /// Ce que memwatch rate et qu'on corrige ici : « ferme une app » ne dit pas laquelle.
     /// On nomme le plus gros consommateur qui ne porte pas de travail en cours : fermer
     /// Chrome coûte des onglets qui reviennent, fermer cmux coûte une session.
-    /// Jamais deux alertes à moins de cinq minutes, même si la pression empire.
-    private static let plancher: TimeInterval = 300
-    /// À niveau constant, on réannonce une demi-heure plus tard, pas avant.
-    private static let rappel: TimeInterval = 1800
-
+    /// Quoi annoncer et à quel rythme : c'est l'usager qui règle (PolitiqueAlertes).
+    /// Le plancher s'applique aussi à l'aggravation : sur une machine qui vit à 0,1 Go
+    /// libre, la pression oscille entre normal et warning en permanence, et chaque
+    /// oscillation repassait autrefois pour une aggravation, toutes les cinq secondes.
     private func surveille(_ m: Memoire, _ liste: [Consommateur]) {
         guard m.pression >= 2 else { niveauAlerte = 1; return }
         guard !alarme.visible else { return }
 
-        // LE PLANCHER S'APPLIQUE AUSSI À L'AGGRAVATION, et c'est tout le correctif.
-        //
-        // La version d'avant alertait sans délai dès que le niveau montait. Or la ligne
-        // ci-dessus remet `niveauAlerte` à 1 à la moindre accalmie : sur une machine qui
-        // vit à 0,1 Go libre, la pression du noyau oscille entre normal et warning en
-        // permanence, chaque oscillation repassait pour une aggravation, et l'alerte
-        // revenait toutes les cinq secondes. Le délai de quinze minutes existait déjà,
-        // mais ce chemin le contournait entièrement.
         let ecoule = Date().timeIntervalSince(derniereAlerte)
-        let empire = m.pression > niveauAlerte
-        guard ecoule > Self.plancher, empire || ecoule > Self.rappel else { return }
+        guard Reglages.alertes.pression(m.pression, annonce: niveauAlerte, ecoule: ecoule)
+        else { return }
         niveauAlerte = m.pression
         derniereAlerte = Date()
 
@@ -456,7 +447,14 @@ final class Controleur: NSObject, NSWindowDelegate {
         dernierJetsam = nom
 
         guard let (victime, raison) = Jetsam.victime(recent) else { return }
-        if raison == "per-process-limit" {
+        // Le rapport est noté vu même s'il est tu : sinon il ressortirait au tour suivant.
+        let propre = raison == "per-process-limit"
+        guard !alarme.visible,
+              Reglages.alertes.jetsam(critique: !propre,
+                                      ecoule: Date().timeIntervalSince(derniereAlerte))
+        else { return }
+        derniereAlerte = Date()
+        if propre {
             // Sa limite à lui, pas celle de la machine : on informe, on n'alarme pas.
             alarme.montre("macOS stopped \(victime)",
                           "It hit its own memory limit, not the machine's. Nothing to do.",

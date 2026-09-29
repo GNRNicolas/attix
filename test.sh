@@ -18,6 +18,6 @@ BIN="${TMPDIR:-/tmp}/attix-tests.bin"
 mkdir -p "$CACHE"
 
 swiftc -module-name AttixTests -module-cache-path "$CACHE" \
-  -o "$BIN" "$ICI/Mesures.swift" "$ICI/Tests"/*.swift
+  -o "$BIN" "$ICI/Mesures.swift" "$ICI/Politique.swift" "$ICI/Tests"/*.swift
 
 "$BIN"

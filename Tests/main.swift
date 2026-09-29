@@ -229,6 +229,33 @@ verifie("WindowServer is untouchable", INTOUCHABLES.contains("WindowServer"), tr
 verifie("loginwindow is untouchable", INTOUCHABLES.contains("loginwindow"), true)
 
 // ─────────────────────────────────────────────────────────────────────────────
+// MARK: PolitiqueAlertes : lesquelles, et à quel rythme
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Le bug d'origine : trop d'alertes. La pression oscille entre normal et warning sur
+// une machine pleine, et les rapports Jetsam n'avaient aucun plafond.
+
+section("PolitiqueAlertes")
+let tout = PolitiqueAlertes(niveau: .toutes, intervalle: 900)
+verifie("warning alerts in the default mode", tout.pression(2, annonce: 1, ecoule: 1000), true)
+verifie("no alert before the interval, even if it worsens",
+        tout.pression(4, annonce: 2, ecoule: 600), false)
+verifie("same level is not repeated before the reminder", tout.pression(2, annonce: 2, ecoule: 1000), false)
+verifie("same level is repeated after 30 min", tout.pression(2, annonce: 2, ecoule: 1801), true)
+let heure = PolitiqueAlertes(niveau: .toutes, intervalle: 3600)
+verifie("a 1 h interval is not beaten by the 30 min reminder",
+        heure.pression(2, annonce: 2, ecoule: 2000), false)
+let crit = PolitiqueAlertes(niveau: .critiques, intervalle: 900)
+verifie("critical-only mode ignores warnings", crit.pression(2, annonce: 1, ecoule: 5000), false)
+verifie("critical-only mode still announces critical", crit.pression(4, annonce: 1, ecoule: 5000), true)
+verifie("critical-only mode ignores per-process-limit kills", crit.jetsam(critique: false, ecoule: 5000), false)
+verifie("critical-only mode announces machine-wide kills", crit.jetsam(critique: true, ecoule: 5000), true)
+verifie("jetsam respects the interval", tout.jetsam(critique: true, ecoule: 60), false)
+let rien = PolitiqueAlertes(niveau: .aucune, intervalle: 300)
+verifie("never means never, pressure", rien.pression(4, annonce: 1, ecoule: 99999), false)
+verifie("never means never, jetsam", rien.jetsam(critique: true, ecoule: 99999), false)
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 print("\n\(passes) passed, \(echecs) failed")
 exit(echecs == 0 ? 0 : 1)

@@ -70,6 +70,24 @@ enum Reglages {
         set { d.set(newValue, forKey: "barreSeule"); applique() }
     }
 
+    /// Ce qui mérite une alerte et à quel rythme. Défaut : tout, au plus une par quart
+    /// d'heure (c'était une toutes les cinq minutes, sans plafond pour Jetsam).
+    static var alertes: PolitiqueAlertes {
+        get {
+            var p = PolitiqueAlertes()
+            if let n = d.string(forKey: "alertesNiveau"), let v = NiveauAlertes(rawValue: n) {
+                p.niveau = v
+            }
+            let i = d.double(forKey: "alertesIntervalle")
+            if PolitiqueAlertes.intervalles.contains(i) { p.intervalle = i }
+            return p
+        }
+        set {
+            d.set(newValue.niveau.rawValue, forKey: "alertesNiveau")
+            d.set(newValue.intervalle, forKey: "alertesIntervalle")
+        }
+    }
+
     /// Le démarrage au login n'est pas stocké par nous : l'état de vérité est celui du
     /// système, que l'usager peut changer dans Réglages sans passer par l'app. Le lire
     /// plutôt que le dupliquer évite une case qui affirme le contraire de la réalité.
@@ -208,15 +226,18 @@ enum RaccourciSpotlight {
     }
 }
 
-/// Une fenêtre de réglages minuscule : trois cases, et ce qu'elles impliquent écrit dessous.
+/// Une fenêtre de réglages minuscule : trois cases, ce qu'elles impliquent écrit dessous,
+/// puis les alertes : lesquelles, et à quel rythme.
 final class FenetreReglages: NSWindowController {
     private let dock = NSButton(checkboxWithTitle: "Show in the Dock", target: nil, action: nil)
     private let barre = NSButton(checkboxWithTitle: "Show in the menu bar", target: nil, action: nil)
     private let login = NSButton(checkboxWithTitle: "Open at login", target: nil, action: nil)
     private let note = label("", taille: 11, couleur: .secondaryLabelColor)
+    private let niveau = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let rythme = NSPopUpButton(frame: .zero, pullsDown: false)
 
     convenience init() {
-        let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 178),
+        let f = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 290),
                          styleMask: [.titled, .closable], backing: .buffered, defer: false)
         f.title = "Attix Settings"
         f.isReleasedWhenClosed = false
@@ -229,10 +250,19 @@ final class FenetreReglages: NSWindowController {
         note.lineBreakMode = .byWordWrapping
         note.maximumNumberOfLines = 2
 
-        let pile = NSStackView(views: [dock, barre, login, note])
+        niveau.addItems(withTitles: NiveauAlertes.allCases.map(\.titre))
+        rythme.addItems(withTitles: PolitiqueAlertes.intervalles.map {
+            "At most one every \(Int($0 / 60)) min"
+        })
+        niveau.target = self; niveau.action = #selector(change)
+        rythme.target = self; rythme.action = #selector(change)
+
+        let titreAlertes = label("Alerts", taille: 12, poids: .semibold)
+        let pile = NSStackView(views: [dock, barre, login, note, titreAlertes, niveau, rythme])
         pile.orientation = .vertical
         pile.alignment = .leading
         pile.spacing = 10
+        pile.setCustomSpacing(18, after: note)
         pile.edgeInsets = NSEdgeInsets(top: 18, left: 20, bottom: 18, right: 20)
         pile.translatesAutoresizingMaskIntoConstraints = false
         f.contentView = pile
@@ -258,6 +288,10 @@ final class FenetreReglages: NSWindowController {
         dock.state = Reglages.barreSeule ? .off : .on
         barre.state = Reglages.barreMenus ? .on : .off
         login.state = Reglages.auLogin ? .on : .off
+        let a = Reglages.alertes
+        niveau.selectItem(at: NiveauAlertes.allCases.firstIndex(of: a.niveau) ?? 0)
+        rythme.selectItem(at: PolitiqueAlertes.intervalles.firstIndex(of: a.intervalle) ?? 1)
+        rythme.isEnabled = a.niveau != .aucune
         regleLaNote()
         window?.center()
         showWindow(nil)
@@ -269,6 +303,11 @@ final class FenetreReglages: NSWindowController {
         Reglages.barreSeule = (dock.state == .off)
         Reglages.barreMenus = (barre.state == .on)
         Reglages.auLogin = (login.state == .on)
+        Reglages.alertes = PolitiqueAlertes(
+            niveau: NiveauAlertes.allCases[max(0, niveau.indexOfSelectedItem)],
+            intervalle: PolitiqueAlertes.intervalles[max(0, rythme.indexOfSelectedItem)])
+        // Rien à rythmer quand rien n'est annoncé.
+        rythme.isEnabled = Reglages.alertes.niveau != .aucune
         regleLaNote()
     }
 }
